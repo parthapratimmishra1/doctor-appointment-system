@@ -1,0 +1,50 @@
+[
+  {
+    "appointment_id": 1002,
+    "patient_name": "Partha",
+    "phone": "9876543210",
+    "doctor_id": 1,
+    "doctor_name": "Dr. Ananya Sen",
+    "specialization": "General Physician",
+    "date": "2026-04-02",
+    "time": "10:00 AM",
+    "status": "Booked",
+    "created_at": "2026-04-01 06:52:58"
+  },
+  {
+    "appointment_id": 1002,
+    "patient_name": "Parthapratim Mishra",
+    "phone": "9874563210",
+    "doctor_id": 2,
+    "doctor_name": "Dr. Rahul Mehta",
+    "specialization": "Cardiologist",
+    "date": "2026-04-09",
+    "time": "03:00 PM",
+    "status": "Booked",
+    "created_at": "2026-04-01 12:54:01"
+  },
+  {
+    "appointment_id": 1003,
+    "patient_name": "Ram Mishra",
+    "phone": "9800508583",
+    "doctor_id": 1,
+    "doctor_name": "Dr. Ananya Sen",
+    "specialization": "General Physician",
+    "date": "2026-04-02",
+    "time": "11:00 AM",
+    "status": "Booked",
+    "created_at": "2026-04-01 12:57:36"
+  },
+  {
+    "appointment_id": 1004,
+    "patient_name": "fdgfgfh",
+    "phone": "7029019911",
+    "doctor_id": 4,
+    "doctor_name": "Dr. Arjun Roy",
+    "specialization": "Orthopedic",
+    "date": "2026-04-04",
+    "time": "02:00 PM",
+    "status": "Booked",
+    "created_at": "2026-04-01 13:22:29"
+  }
+]

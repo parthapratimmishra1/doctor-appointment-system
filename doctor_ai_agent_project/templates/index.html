@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent Doctor Appointment Booking</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="hero">
+        <div class="container hero-content">
+            <div>
+                <p class="tag">Smart Healthcare Project</p>
+                <h1>Doctor Appointment Booking System Using AI Agent</h1>
+                <p class="subtitle">
+                    Book appointments, get doctor recommendations from symptoms, view bookings,
+                    and cancel appointments using an AI-based chat assistant.
+                </p>
+                <div class="hero-buttons">
+                    <a href="#booking" class="btn primary">Book Now</a>
+                    <a href="#ai-agent" class="btn secondary">Try AI Agent</a>
+                </div>
+            </div>
+            <div class="hero-card">
+                <h3>AI Agent Can:</h3>
+                <ul>
+                    <li>Suggest doctors from symptoms</li>
+                    <li>Book appointment by chat</li>
+                    <li>Show your appointments</li>
+                    <li>Cancel bookings by appointment ID</li>
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="section">
+            <h2>Available Doctors</h2>
+            <div class="card-grid">
+                {% for doctor in doctors %}
+                <div class="doctor-card">
+                    <h3>{{ doctor.name }}</h3>
+                    <p class="spec">{{ doctor.specialization }}</p>
+                    <p><strong>Consultation Fee:</strong> ₹{{ doctor.fee }}</p>
+                    <p><strong>Slots:</strong> {{ doctor.slots | join(', ') }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section id="booking" class="section two-col">
+            <div class="panel">
+                <h2>Book Appointment Form</h2>
+                <form id="bookingForm">
+                    <label>Patient Name</label>
+                    <input type="text" name="patient_name" placeholder="Enter patient name" required>
+
+                    <label>Phone Number</label>
+                    <input type="text" name="phone" placeholder="Enter 10-digit mobile number" required>
+
+                    <label>Select Doctor</label>
+                    <select name="doctor_id" required>
+                        <option value="">Choose doctor</option>
+                        {% for doctor in doctors %}
+                        <option value="{{ doctor.id }}">{{ doctor.name }} - {{ doctor.specialization }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <label>Date</label>
+                    <input type="date" name="date" required>
+
+                    <label>Time</label>
+                    <input type="text" name="time" placeholder="Example: 10:00 AM" required>
+
+                    <button type="submit" class="btn primary full">Confirm Booking</button>
+                </form>
+                <div id="formMessage" class="message-box hidden"></div>
+            </div>
+
+            <div id="ai-agent" class="panel">
+                <h2>AI Agent Assistant</h2>
+                <div class="chat-box" id="chatBox">
+                    <div class="bot-msg">
+                        Hello! I am your AI medical booking assistant.<br><br>
+                        Try messages like:<br>
+                        1. I have fever and cough, suggest doctor<br>
+                        2. Book appointment with Dr. Ananya Sen tomorrow at 10 AM my name is Partha 9876543210<br>
+                        3. Show my appointments 9876543210<br>
+                        4. Cancel 1001
+                    </div>
+                </div>
+                <div class="chat-input-row">
+                    <input type="text" id="userMessage" placeholder="Type your message here...">
+                    <button class="btn primary" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Current Appointments</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Patient</th>
+                            <th>Phone</th>
+                            <th>Doctor</th>
+                            <th>Specialization</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="appointmentsTableBody">
+                        {% if appointments %}
+                            {% for item in appointments %}
+                            <tr>
+                                <td>{{ item.appointment_id }}</td>
+                                <td>{{ item.patient_name }}</td>
+                                <td>{{ item.phone }}</td>
+                                <td>{{ item.doctor_name }}</td>
+                                <td>{{ item.specialization }}</td>
+                                <td>{{ item.date }}</td>
+                                <td>{{ item.time }}</td>
+                                <td><span class="status">{{ item.status }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="empty">No appointments booked yet.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById('userMessage');
+            const chatBox = document.getElementById('chatBox');
+            const message = input.value.trim();
+            if (!message) return;
+
+            chatBox.innerHTML += `<div class="user-msg">${message}</div>`;
+            input.value = '';
+
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message })
+            });
+
+            const data = await response.json();
+            chatBox.innerHTML += `<div class="bot-msg">${data.reply.replace(/\n/g, '<br>')}</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+            refreshAppointments();
+        }
+
+        document.getElementById('bookingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const response = await fetch('/book-form', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            const box = document.getElementById('formMessage');
+            box.classList.remove('hidden');
+            box.textContent = data.message;
+            box.className = data.success ? 'message-box success' : 'message-box error';
+            if (data.success) {
+                this.reset();
+                refreshAppointments();
+            }
+        });
+
+        async function refreshAppointments() {
+            const response = await fetch('/appointments');
+            const data = await response.json();
+            const tbody = document.getElementById('appointmentsTableBody');
+
+            if (!data.length) {
+                tbody.innerHTML = '<tr><td colspan="8" class="empty">No appointments booked yet.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(item => `
+                <tr>
+                    <td>${item.appointment_id}</td>
+                    <td>${item.patient_name}</td>
+                    <td>${item.phone}</td>
+                    <td>${item.doctor_name}</td>
+                    <td>${item.specialization}</td>
+                    <td>${item.date}</td>
+                    <td>${item.time}</td>
+                    <td><span class="status">${item.status}</span></td>
+                </tr>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
